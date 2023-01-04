@@ -53,7 +53,7 @@ function App() {
       objectID: 5,
     },
   ];
-  const [searchTerm, setSearchTerm] = useSemiPersistentState('React') ;
+  const [searchTerm, setSearchTerm] = useSemiPersistentState('search','React') ;
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -121,15 +121,15 @@ function Search(props) {
   );
 }
 
-const useSemiPersistentState = (initialState) => {
+const useSemiPersistentState = (key, initialState) => {
   const [value, setValue] = useState(
-    localStorage.getItem('value') || initialState
+    localStorage.getItem(key) || initialState
   );
   useEffect(()=>{
     localStorage.setItem(
-      'value', value
+      key, value
     )
-  },[value]);
+  },[value, key]);
   return [value, setValue] ;
 }
 
