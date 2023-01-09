@@ -1,8 +1,10 @@
-import * as React from "react";
-import axios from "axios";
-import styles from './App.module.css' ;
+import * as React from 'react';
+import axios from 'axios';
 
-const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+import './App.css';
+import { ReactComponent as Check } from './check.svg';
+
+const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
 const useSemiPersistentState = (key, initialState) => {
   const [value, setValue] = React.useState(
@@ -18,26 +20,26 @@ const useSemiPersistentState = (key, initialState) => {
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
-    case "STORIES_FETCH_INIT":
+    case 'STORIES_FETCH_INIT':
       return {
         ...state,
         isLoading: true,
         isError: false,
       };
-    case "STORIES_FETCH_SUCCESS":
+    case 'STORIES_FETCH_SUCCESS':
       return {
         ...state,
         isLoading: false,
         isError: false,
         data: action.payload,
       };
-    case "STORIES_FETCH_FAILURE":
+    case 'STORIES_FETCH_FAILURE':
       return {
         ...state,
         isLoading: false,
         isError: true,
       };
-    case "REMOVE_STORY":
+    case 'REMOVE_STORY':
       return {
         ...state,
         data: state.data.filter(
@@ -50,25 +52,32 @@ const storiesReducer = (state, action) => {
 };
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
-  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+  const [searchTerm, setSearchTerm] = useSemiPersistentState(
+    'search',
+    'React'
+  );
 
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, {
-    data: [],
-    isLoading: false,
-    isError: false,
-  });
+  const [url, setUrl] = React.useState(
+    `${API_ENDPOINT}${searchTerm}`
+  );
+
+  const [stories, dispatchStories] = React.useReducer(
+    storiesReducer,
+    { data: [], isLoading: false, isError: false }
+  );
+
   const handleFetchStories = React.useCallback(async () => {
-    dispatchStories({ type: "STORIES_FETCH_INIT" });
+    dispatchStories({ type: 'STORIES_FETCH_INIT' });
+
     try {
       const result = await axios.get(url);
 
       dispatchStories({
-        type: "STORIES_FETCH_SUCCESS",
+        type: 'STORIES_FETCH_SUCCESS',
         payload: result.data.hits,
       });
     } catch {
-      dispatchStories({ type: "STORIES_FETCH_FAILURE" });
+      dispatchStories({ type: 'STORIES_FETCH_FAILURE' });
     }
   }, [url]);
 
@@ -78,7 +87,7 @@ const App = () => {
 
   const handleRemoveStory = (item) => {
     dispatchStories({
-      type: "REMOVE_STORY",
+      type: 'REMOVE_STORY',
       payload: item,
     });
   };
@@ -86,23 +95,25 @@ const App = () => {
   const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
   };
+
   const handleSearchSubmit = (event) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
+
     event.preventDefault();
   };
 
-  
   return (
-    <div className={styles.container}>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
 
-      <h1 className={styles.headlinePrimary}>My Hacker Stories</h1>
       <SearchForm
         searchTerm={searchTerm}
         onSearchInput={handleSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
-      
+
       {stories.isError && <p>Something went wrong ...</p>}
+
       {stories.isLoading ? (
         <p>Loading ...</p>
       ) : (
@@ -112,10 +123,35 @@ const App = () => {
   );
 };
 
+const SearchForm = ({
+  searchTerm,
+  onSearchInput,
+  onSearchSubmit,
+}) => (
+  <form onSubmit={onSearchSubmit} className="search-form">
+    <InputWithLabel
+      id="search"
+      value={searchTerm}
+      isFocused
+      onInputChange={onSearchInput}
+    >
+      <strong>Search:</strong>
+    </InputWithLabel>
+
+    <button
+      type="submit"
+      disabled={!searchTerm}
+      className="button button_large"
+    >
+      Submit
+    </button>
+  </form>
+);
+
 const InputWithLabel = ({
   id,
   value,
-  type = "text",
+  type = 'text',
   onInputChange,
   isFocused,
   children,
@@ -130,7 +166,9 @@ const InputWithLabel = ({
 
   return (
     <>
-      <label htmlFor={id} className={styles.label}>{children}</label>
+      <label htmlFor={id} className="label">
+        {children}
+      </label>
       &nbsp;
       <input
         id={id}
@@ -138,7 +176,7 @@ const InputWithLabel = ({
         type={type}
         value={value}
         onChange={onInputChange}
-        className={styles.input}
+        className="input"
       />
     </>
   );
@@ -147,36 +185,30 @@ const InputWithLabel = ({
 const List = ({ list, onRemoveItem }) => (
   <ul>
     {list.map((item) => (
-      <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+      <Item
+        key={item.objectID}
+        item={item}
+        onRemoveItem={onRemoveItem}
+      />
     ))}
   </ul>
 );
-const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit}) => (
-  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
-    <InputWithLabel
-      id="search"
-      value={searchTerm}
-      isFocused
-      onInputChange={onSearchInput}
-    >
-      <strong>Search:</strong>
-    </InputWithLabel>
-    <button type="submit" disabled={!searchTerm} className={`${styles.button} ${styles.buttonLarge}}`}>
-      Search
-    </button>
-  </form>
-  );
+
 const Item = ({ item, onRemoveItem }) => (
-  <li className={styles.item}>
-    <span style={{width:'40%'}}>
+  <li className="item">
+    <span style={{ width: '40%' }}>
       <a href={item.url}>{item.title}</a>
     </span>
     <span style={{ width: '30%' }}>{item.author}</span>
     <span style={{ width: '10%' }}>{item.num_comments}</span>
     <span style={{ width: '10%' }}>{item.points}</span>
     <span style={{ width: '10%' }}>
-      <button type="button" onClick={() => onRemoveItem(item)} className={`${styles.button} ${styles.buttonSmall}`}>
-        Dismiss
+      <button
+        type="button"
+        onClick={() => onRemoveItem(item)}
+        className="button button_small"
+      >
+        <Check height="18px" width="18px" />
       </button>
     </span>
   </li>
